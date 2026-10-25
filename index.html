@@ -6,14 +6,14 @@
 <style>
 :root{color-scheme:dark;--bg:#0b1017;--panel:#111923;--panel2:#17212d;--line:#263342;--muted:#8fa0b3;--text:#eef4fb;--green:#5be0aa;--red:#ff7485;--blue:#83b7ff;--yellow:#f3c96b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:900px;margin:auto;padding:20px 16px 92px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.brand{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border-radius:14px;background:#18352b;display:grid;place-items:center;color:var(--green);font-size:23px}.brand h1{font-size:20px;margin:0;letter-spacing:-.5px}.brand small{color:var(--muted)}.monthnav{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px}.monthnav h2{font-size:18px;margin:0}.iconbtn,.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:11px;padding:9px 12px}.navbuttons{display:flex;gap:7px}.hero{background:linear-gradient(135deg,#153126,#12231f 70%,#17212d);border:1px solid #28513f;border-radius:20px;padding:20px;margin-bottom:12px}.eyebrow{color:#a4cbbb;font-size:12px;text-transform:uppercase;letter-spacing:1px}.pnl{font-size:34px;font-weight:750;letter-spacing:-1px;margin:5px 0 14px;color:var(--green);overflow-wrap:anywhere}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:20px}.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}.stat small{color:var(--muted);display:block;font-size:12px}.stat strong{display:block;font-size:20px;margin-top:5px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:24px 0 12px}.sectionhead h2{font-size:17px;margin:0}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.dow{text-align:center;color:var(--muted);font-size:11px;padding:4px 0}.day{min-height:62px;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:6px 4px;text-align:left;color:var(--text);min-width:0}.day.empty{visibility:hidden}.day.selected{outline:2px solid var(--blue);outline-offset:1px}.day .num{font-size:12px;color:#c4d0dc}.day .amount{font-size:clamp(9px,2.4vw,12px);font-weight:700;display:block;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.day.win{background:#123126;border-color:#235943}.day.win .amount{color:var(--green)}.day.loss{background:#351b25;border-color:#63313e}.day.loss .amount{color:var(--red)}.day.flat{background:#17283c;border-color:#2c4a6b}.day.flat .amount{color:var(--blue)}.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:12px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.primary{background:var(--green);color:#07140f;border:0;border-radius:12px;padding:11px 15px;font-weight:750}.secondary{font-weight:600}.trades{display:grid;gap:10px}.trade{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px;display:flex;gap:12px;align-items:flex-start}.trade img{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}.trade-main{flex:1;min-width:0}.trade-title{font-weight:750}.trade-sub{color:var(--muted);font-size:12px;margin-top:3px}.trade-pnl{font-weight:800;white-space:nowrap}.positive{color:var(--green)}.negative{color:var(--red)}.neutral{color:var(--blue)}.emptymsg{color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:14px;padding:20px;text-align:center}.bottom{position:fixed;bottom:0;left:0;right:0;background:#0b1017ed;backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:3}.bottom button{width:min(900px,100%);font-size:16px;padding:13px}.modalback{position:fixed;inset:0;background:#000b;z-index:5;display:none;align-items:flex-end;justify-content:center;padding:12px}.modalback.show{display:flex}.modal{width:min(650px,100%);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px}.modalhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.modalhead h2{margin:0;font-size:20px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted)}.field input,.field select,.field textarea{width:100%;background:#0c131c;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;outline:none}.field textarea{min-height:75px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green)}.preview{max-width:100%;max-height:180px;object-fit:contain;border-radius:10px;display:none}.formactions{display:flex;gap:8px;margin-top:16px}.formactions button{flex:1}.smallnote{font-size:11px;color:var(--muted);margin-top:16px}.hidden{display:none!important}@media(min-width:650px){.app{padding-top:28px}.day{min-height:76px;padding:8px}.modalback{align-items:center}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:380px){.stats{gap:6px}.stat{padding:10px}.stat strong{font-size:17px}.day{min-height:54px;padding:4px 2px}.calendar{gap:4px}.pnl{font-size:30px}}
-</style>
-<meta name="description" content="Jurnal trading pribadi TradeLog">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icon.svg" type="image/svg+xml">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-</head>
+
+.viewerback{position:fixed;inset:0;background:#000e;z-index:20;display:none;align-items:center;justify-content:center;padding:16px}
+.viewerback.show{display:flex}
+.viewerbox{width:min(100%,1000px);max-height:100%;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.viewerbox img{display:block;max-width:100%;max-height:82vh;object-fit:contain;border-radius:12px;background:#0b1017}
+.viewerclose{background:#17212d;border:1px solid #39495a;color:#eef4fb;border-radius:999px;padding:10px 14px;font-weight:700}
+.trade img{cursor:zoom-in}
+</style></head>
 <body><main class="app">
 <header class="top"><div class="brand"><div class="logo">↗</div><div><h1>TradeLog</h1><small>Jurnal trading pribadi</small></div></div><div style="display:flex;gap:6px"><button class="iconbtn" id="restoreBtn" title="Pulihkan backup">↧ Restore</button><button class="iconbtn" id="backupBtn" title="Backup data">↥ Backup</button></div></header>
 <section class="hero"><div class="eyebrow" id="pnlLabel">Net P&L · bulan ini</div><div class="pnl" id="totalPnl">$0.00</div><div class="eyebrow" id="monthSummary">Belum ada transaksi</div></section>
@@ -37,6 +37,13 @@
 <div class="field full"><label for="setup">Catatan setup / evaluasi</label><textarea id="setup" placeholder="Contoh: FVG M15, entry setelah CHoCH M1..."></textarea></div>
 <div class="field full"><label for="imageFile">Screenshot chart (opsional)</label><input id="imageFile" type="file" accept="image/*"><img id="preview" class="preview" alt="Preview screenshot"><button type="button" class="secondary hidden" id="removeImage">Hapus gambar</button></div>
 </div><div class="formactions"><button type="button" class="secondary" id="cancelBtn">Batal</button><button type="submit" class="primary">Simpan trade</button></div><p class="smallnote">Isi P&L sebagai angka positif untuk profit, negatif untuk loss, dan 0 untuk break-even. Label hasil otomatis disesuaikan dengan tanda P&L.</p></form></section></div>
+
+<div class="viewerback" id="imageViewer" role="dialog" aria-modal="true" aria-label="Screenshot chart ukuran besar">
+  <div class="viewerbox">
+    <button type="button" class="viewerclose" id="closeImageViewer">✕ Tutup</button>
+    <img id="viewerImage" alt="Screenshot chart ukuran besar">
+  </div>
+</div>
 <input type="file" id="importFile" accept="application/json" class="hidden">
 <script>
 (()=>{'use strict';
@@ -72,6 +79,7 @@ function render(){
  el.innerHTML=`${t.image?`<img src="${t.image}" alt="Chart">`:''}<div class="trade-main"><div class="trade-title">${esc(t.pair)} <span style="color:var(--muted);font-size:12px">· ${esc(t.side)}</span></div><div class="trade-sub">Entry ${esc(t.entry||'—')} · SL ${esc(t.sl||'—')} · TP ${esc(t.tp||'—')}</div><div class="trade-sub">${esc(t.setup||'Tanpa catatan')}</div><div class="toolbar" style="margin-top:9px"><button class="secondary" data-edit="${esc(t.id)}">Edit</button><button class="secondary" data-delete="${esc(t.id)}">Hapus</button></div></div><div class="trade-pnl ${cls}">${pnl>0?'+':''}${money(pnl)}</div>`;
  list.append(el)});
  list.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editTrade(b.dataset.edit));list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm('Hapus trade ini?')){trades=trades.filter(t=>t.id!==b.dataset.delete);save();render()}});
+  list.querySelectorAll('img').forEach(img=>{img.title='Ketuk untuk memperbesar';img.setAttribute('role','button');img.setAttribute('tabindex','0');const open=()=>showImage(img.src);img.addEventListener('click',open);img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
 }
 function openModal(t){$('tradeForm').reset();imageData=t?.image||'';removeExistingImage=false;$('tradeId').value=t?.id||'';$('modalTitle').textContent=t?'Edit trade':'Tambah trade';$('date').value=t?.date||selected;$('pair').value=t?.pair||'';$('side').value=t?.side||'Buy';$('entry').value=t?.entry||'';$('sl').value=t?.sl||'';$('tp').value=t?.tp||'';$('pnl').value=t?.pnl??'';$('setup').value=t?.setup||'';
  const p=$('preview');p.src=imageData;p.style.display=imageData?'block':'none';$('removeImage').classList.toggle('hidden',!imageData);$('modalback').classList.add('show')}
@@ -90,14 +98,11 @@ $('backupBtn').onclick=()=>download('tradelog-backup-'+iso(new Date())+'.json',J
 $('exportBtn').onclick=()=>{const cols=['date','pair','side','entry','sl','tp','pnl','setup'];const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';download('tradelog-trades.csv',[cols.join(','),...trades.map(t=>cols.map(k=>q(t[k])).join(','))].join('\n'),'text/csv;charset=utf-8')};
 $('restoreBtn').onclick=()=>$('importFile').click();
 $('importFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data))throw 0;if(!confirm('Restore backup akan mengganti data jurnal yang ada. Lanjutkan?'))return;trades=data;save();render();alert('Backup berhasil dipulihkan.')}catch{alert('File backup tidak valid.')}e.target.value=''};
+function showImage(src){$('viewerImage').src=src;$('imageViewer').classList.add('show')}
+function closeImage(){$('imageViewer').classList.remove('show');$('viewerImage').src=''}
+$('closeImageViewer').onclick=closeImage;
+$('imageViewer').addEventListener('click',e=>{if(e.target===$('imageViewer'))closeImage()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImage()});
 load();render();
 })();
-</script>
-<script>
-if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(err => console.warn("Service worker registration failed", err));
-  });
-}
-</script>
-</body></html>
+</script></body></html>
