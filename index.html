@@ -79,7 +79,7 @@ function render(){
  el.innerHTML=`${t.image?`<img src="${t.image}" alt="Chart">`:''}<div class="trade-main"><div class="trade-title">${esc(t.pair)} <span style="color:var(--muted);font-size:12px">· ${esc(t.side)}</span></div><div class="trade-sub">Entry ${esc(t.entry||'—')} · SL ${esc(t.sl||'—')} · TP ${esc(t.tp||'—')}</div><div class="trade-sub">${esc(t.setup||'Tanpa catatan')}</div><div class="toolbar" style="margin-top:9px"><button class="secondary" data-edit="${esc(t.id)}">Edit</button><button class="secondary" data-delete="${esc(t.id)}">Hapus</button></div></div><div class="trade-pnl ${cls}">${pnl>0?'+':''}${money(pnl)}</div>`;
  list.append(el)});
  list.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editTrade(b.dataset.edit));list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm('Hapus trade ini?')){trades=trades.filter(t=>t.id!==b.dataset.delete);save();render()}});
-  list.querySelectorAll('img').forEach(img=>{img.title='Ketuk untuk memperbesar';img.setAttribute('role','button');img.setAttribute('tabindex','0');const open=()=>showImage(img.src);img.addEventListener('click',open);img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
+  list.querySelectorAll('img').forEach(img=>{img.title='Ketuk untuk memperbesar';img.setAttribute('role','button');img.setAttribute('tabindex','0');img.style.cursor='zoom-in';img.style.pointerEvents='auto';const open=e=>{if(e)e.stopPropagation();showImage(img.src)};img.addEventListener('click',open);img.addEventListener('touchend',open,{passive:true});img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e)}})});
 }
 function openModal(t){$('tradeForm').reset();imageData=t?.image||'';removeExistingImage=false;$('tradeId').value=t?.id||'';$('modalTitle').textContent=t?'Edit trade':'Tambah trade';$('date').value=t?.date||selected;$('pair').value=t?.pair||'';$('side').value=t?.side||'Buy';$('entry').value=t?.entry||'';$('sl').value=t?.sl||'';$('tp').value=t?.tp||'';$('pnl').value=t?.pnl??'';$('setup').value=t?.setup||'';
  const p=$('preview');p.src=imageData;p.style.display=imageData?'block':'none';$('removeImage').classList.toggle('hidden',!imageData);$('modalback').classList.add('show')}
@@ -101,6 +101,7 @@ $('importFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{
 function showImage(src){$('viewerImage').src=src;$('imageViewer').classList.add('show')}
 function closeImage(){$('imageViewer').classList.remove('show');$('viewerImage').src=''}
 $('closeImageViewer').onclick=closeImage;
+$('closeImageViewer').addEventListener('touchend',e=>{e.preventDefault();closeImage()},{passive:false});
 $('imageViewer').addEventListener('click',e=>{if(e.target===$('imageViewer'))closeImage()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImage()});
 load();render();
