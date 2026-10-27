@@ -59,13 +59,34 @@ function apiWrite(payload){
 function apiList(){
   return new Promise((resolve,reject)=>{
     const cb='tradelogCb'+Date.now()+Math.random().toString(36).slice(2,8).replace(/[^a-z0-9]/gi,'');
-    const script=document.createElement('script');
-    const timer=setTimeout(()=>{cleanup();reject(new Error('Google Sheets tidak merespons.'))},20000);
-    function cleanup(){clearTimeout(timer);delete window[cb];script.remove()}
-    window[cb]=(data)=>{cleanup();if(data&&data.ok)resolve(data.trades||[]);else reject(new Error(data?.error||'Gagal membaca Google Sheets.'))};
-    script.onerror=()=>{const failedUrl=script.src;cleanup();reject(new Error('Browser gagal memuat respons API. Periksa URL deployment/izin akses. URL: '+failedUrl.split('&token=')[0]))};
-    script.src=API_URL+'?action=list&callback='+encodeURIComponent(cb)+'&token='+encodeURIComponent(API_TOKEN)+'&cacheBust='+Date.now();
-    document.body.appendChild(script);
+    const candidates=[
+      API_URL,
+      API_URL.replace('https://script.google.com/macros/s/','https://script.google.com/macros/u/0/s/'),
+      API_URL.replace('https://script.google.com/macros/s/','https://script.google.com/macros/u/1/s/')
+    ];
+    let attempt=0, errors=[];
+    function tryNext(){
+      if(attempt>=candidates.length){
+        reject(new Error('HP gagal memuat respons Apps Script dari 3 jalur URL. Endpoint utama bisa aktif, tetapi respons daftar trade diblokir/redirect di browser HP. Cek deployment URL dan izin akses.'));
+        return;
+      }
+      const url=candidates[attempt++]+'?action=list&callback='+encodeURIComponent(cb)+'&token='+encodeURIComponent(API_TOKEN)+'&cacheBust='+Date.now();
+      const script=document.createElement('script');
+      let settled=false;
+      const timer=setTimeout(()=>{if(settled)return;settled=true;cleanup();errors.push('timeout');tryNext()},12000);
+      function cleanup(){clearTimeout(timer);script.onerror=null;script.remove()}
+      window[cb]=(data)=>{
+        if(settled)return;settled=true;cleanup();delete window[cb];
+        if(data&&data.ok)resolve(data.trades||[]);
+        else reject(new Error(data?.error||'Google Sheets mengembalikan respons yang tidak valid.'));
+      };
+      script.onerror=()=>{
+        if(settled)return;settled=true;cleanup();errors.push('load error');tryNext();
+      };
+      script.src=url;
+      document.body.appendChild(script);
+    }
+    tryNext();
   });
 }
 async function syncWithSheets(){
@@ -79,7 +100,7 @@ async function syncWithSheets(){
    });
    trades=Array.from(byId.values()).filter(t=>t.date&&t.pair);
    save();render();
-   setSyncStatus('Sync selesai. Data digabung dari perangkat ini dan Google Sheets. Screenshot tetap tersimpan lokal di perangkat asal.');
+   setSyncStatus('Sync selesai. Data Google Sheets sudah digabung dengan data lokal. Screenshot tetap hanya ada di perangkat asal.');
  }catch(err){setSyncStatus('Sync gagal: '+(err.message||err)+' Data lokal tetap aman.')}
  finally{syncBusy=false;$('syncBtn').disabled=false}
 }
