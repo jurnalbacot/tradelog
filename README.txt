@@ -1,14 +1,12 @@
-TradeLog PWA — paket awal
+TradeLog PWA installable package
 
-Isi:
-- index.html: aplikasi TradeLog dari file asli, dengan metadata PWA dan registrasi service worker
-- manifest.webmanifest: nama, ikon, dan pengaturan instalasi
-- sw.js: cache dasar untuk penggunaan offline
-- icon.svg: ikon aplikasi
+Upload/replace these files in the ROOT of your GitHub repository jurnalbacot/tradelog:
+- index.html (replace existing)
+- manifest.webmanifest (new)
+- sw.js (new)
+- icon-192.png (new)
+- icon-512.png (new)
 
-Agar bisa diinstal lewat Chrome Android, unggah seluruh isi folder ini ke hosting HTTPS (misalnya GitHub Pages). Membuka index.html langsung dari Download tidak cukup untuk mengaktifkan instalasi PWA.
+Commit the changes and wait for GitHub Pages to publish. Then open https://jurnalbacot.github.io/tradelog/ in Chrome Android, refresh the page, and use menu (three dots) > Install app. If it still shows unavailable, wait a few minutes and reload once.
 
-PENTING:
-1. Data lama di browser lokal tidak otomatis pindah ke alamat hosting baru karena penyimpanan browser terpisah per alamat/origin.
-2. Di situs yang sudah online, buka TradeLog lalu tekan Restore dan pilih file tradelog-backup-YYYY-MM-DD.json.
-3. Pastikan data sudah kembali sebelum mengandalkan versi online. Simpan file backup JSON sebagai cadangan.
+This package keeps the current TradeLog HTML and Google Sheets settings; it adds PWA metadata, icons, service worker, and mobile header layout. Keep a backup of index.html and your local journal data before replacing files. Do not upload Kode.gs or expose new secrets in the repository.
