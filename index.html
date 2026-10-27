@@ -155,6 +155,12 @@ function streakStats(){
  }
  return {maxWins,maxLosses,last,current,total:ordered.length};
 }
+function displayImageUrl(url){
+ const value=String(url||'');
+ const m=value.match(/[?&]id=([a-zA-Z0-9_-]+)/)||value.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+ if(!m)return value;
+ return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600';
+}
 function render(){
  const y=view.getFullYear(),mo=view.getMonth(),monthTrades=trades.filter(t=>t.date&&t.date.startsWith(`${y}-${String(mo+1).padStart(2,'0')}`));
  const total=monthTrades.reduce((s,t)=>s+Number(t.pnl||0),0),wins=monthTrades.filter(t=>Number(t.pnl)>0).length,losses=monthTrades.filter(t=>Number(t.pnl)<0).length,decisive=wins+losses;
@@ -179,12 +185,12 @@ function render(){
  const list=$('trades'),items=trades.filter(t=>t.date===selected).sort((a,b)=>(b.created||0)-(a.created||0));list.innerHTML='';
  if(!items.length){list.innerHTML='<div class="emptymsg">Belum ada trade pada tanggal ini.<br>Tekan “Tambah trade” untuk mencatat transaksi.</div>';return}
  items.forEach(t=>{const pnl=Number(t.pnl||0),cls=pnl>0?'positive':pnl<0?'negative':'neutral',el=document.createElement('article');el.className='trade';
- el.innerHTML=`${(t.image||t.imageUrl)?`<img src="${esc(t.image||t.imageUrl)}" alt="Chart">`:''}<div class="trade-main"><div class="trade-title">${esc(t.pair)} <span style="color:var(--muted);font-size:12px">· ${esc(t.side)}</span></div><div class="trade-sub">Entry ${esc(t.entry||'—')} · SL ${esc(t.sl||'—')} · TP ${esc(t.tp||'—')}</div><div class="trade-sub">${esc(t.setup||'Tanpa catatan')}</div><div class="toolbar" style="margin-top:9px"><button class="secondary" data-edit="${esc(t.id)}">Edit</button><button class="secondary" data-delete="${esc(t.id)}">Hapus</button></div></div><div class="trade-pnl ${cls}">${pnl>0?'+':''}${money(pnl)}</div>`;
+ el.innerHTML=`${(t.image||t.imageUrl)?`<img src="${esc((t.image&&t.image.startsWith('data:image/'))?t.image:displayImageUrl(t.image||t.imageUrl))}" alt="Chart" onerror="this.style.display='none'">`:''}<div class="trade-main"><div class="trade-title">${esc(t.pair)} <span style="color:var(--muted);font-size:12px">· ${esc(t.side)}</span></div><div class="trade-sub">Entry ${esc(t.entry||'—')} · SL ${esc(t.sl||'—')} · TP ${esc(t.tp||'—')}</div><div class="trade-sub">${esc(t.setup||'Tanpa catatan')}</div><div class="toolbar" style="margin-top:9px"><button class="secondary" data-edit="${esc(t.id)}">Edit</button><button class="secondary" data-delete="${esc(t.id)}">Hapus</button></div></div><div class="trade-pnl ${cls}">${pnl>0?'+':''}${money(pnl)}</div>`;
  list.append(el)});
  list.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editTrade(b.dataset.edit));list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm('Hapus trade ini?')){trades=trades.filter(t=>t.id!==b.dataset.delete);save();apiWrite({action:'delete',id:b.dataset.delete,token:API_TOKEN}).catch(()=>{});setSyncStatus('Penghapusan dikirim ke server. Tekan Sync di perangkat lain agar penghapusan ikut diterapkan.');render()}});
   list.querySelectorAll('img').forEach(img=>{img.title='Ketuk untuk memperbesar';img.setAttribute('role','button');img.setAttribute('tabindex','0');img.style.cursor='zoom-in';img.style.pointerEvents='auto';const open=e=>{if(e)e.stopPropagation();showImage(img.src)};img.addEventListener('click',open);img.addEventListener('touchend',open,{passive:true});img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e)}})});
 }
-function openModal(t){$('tradeForm').reset();imageData=t?.image||t?.imageUrl||'';removeExistingImage=false;$('tradeId').value=t?.id||'';$('modalTitle').textContent=t?'Edit trade':'Tambah trade';$('date').value=t?.date||selected;$('pair').value=t?.pair||'';$('side').value=t?.side||'Buy';$('entry').value=t?.entry||'';$('sl').value=t?.sl||'';$('tp').value=t?.tp||'';$('pnl').value=t?.pnl??'';$('setup').value=t?.setup||'';
+function openModal(t){$('tradeForm').reset();imageData=t?.image||t?.imageUrl||'';if(imageData&&!imageData.startsWith('data:image/'))imageData=displayImageUrl(imageData);removeExistingImage=false;$('tradeId').value=t?.id||'';$('modalTitle').textContent=t?'Edit trade':'Tambah trade';$('date').value=t?.date||selected;$('pair').value=t?.pair||'';$('side').value=t?.side||'Buy';$('entry').value=t?.entry||'';$('sl').value=t?.sl||'';$('tp').value=t?.tp||'';$('pnl').value=t?.pnl??'';$('setup').value=t?.setup||'';
  const p=$('preview');p.src=imageData;p.style.display=imageData?'block':'none';$('removeImage').classList.toggle('hidden',!imageData);$('modalback').classList.add('show')}
 function closeModal(){$('modalback').classList.remove('show')}
 function editTrade(id){const t=trades.find(x=>x.id===id);if(t)openModal(t)}
