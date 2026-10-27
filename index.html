@@ -77,7 +77,7 @@ function apiList(){
       function cleanup(){clearTimeout(timer);script.onerror=null;script.remove()}
       window[cb]=(data)=>{
         if(settled)return;settled=true;cleanup();delete window[cb];
-        if(data&&data.ok)resolve(data.trades||[]);
+        if(data&&data.ok)resolve({trades:data.trades||[],deletedIds:Array.isArray(data.deletedIds)?data.deletedIds.map(String):[]});
         else reject(new Error(data?.error||'Google Sheets mengembalikan respons yang tidak valid.'));
       };
       script.onerror=()=>{
@@ -90,17 +90,42 @@ function apiList(){
   });
 }
 async function syncWithSheets(){
- if(syncBusy)return;syncBusy=true;$('syncBtn').disabled=true;setSyncStatus('Menyinkronkan dengan Google Sheets…');
+ if(syncBusy)return;
+ syncBusy=true;$('syncBtn').disabled=true;setSyncStatus('Menyinkronkan trade dan penghapusan…');
  try{
-   const remote=await apiList();
+   const result=await apiList();
+   const remote=result.trades;
+   const deleted=new Set(result.deletedIds);
+   // Terapkan penanda hapus dari server ke perangkat ini terlebih dahulu.
+   trades=trades.filter(t=>!deleted.has(String(t.id)));
    const byId=new Map(trades.map(t=>[String(t.id),t]));
    remote.forEach(r=>{
-     const old=byId.get(String(r.id));
-     byId.set(String(r.id),{id:String(r.id),date:String(r.date||''),pair:String(r.pair||''),side:String(r.side||'Buy'),entry:r.entry??'',sl:r.sl??'',tp:r.tp??'',pnl:Number(r.pnl||0),setup:String(r.setup||''),image:old?.image||r.imageUrl||'',imageUrl:String(r.imageUrl||old?.imageUrl||''),created:old?.created||Date.now(),updated:r.updated||''});
+     const id=String(r.id);
+     if(deleted.has(id))return;
+     const old=byId.get(id);
+     const remoteUpdated=Date.parse(r.updated||'')||0;
+     const localUpdated=Number(old?.updated||0)||0;
+     // Google Sheets menjadi sumber utama untuk record yang sudah ada di server.
+     // Data gambar lokal dipertahankan bila URL Drive belum tersedia.
+     byId.set(id,{
+       id,date:String(r.date||''),pair:String(r.pair||''),side:String(r.side||'Buy'),
+       entry:r.entry??'',sl:r.sl??'',tp:r.tp??'',pnl:Number(r.pnl||0),setup:String(r.setup||''),
+       image:old?.image||r.imageUrl||'',imageUrl:String(r.imageUrl||old?.imageUrl||''),
+       created:old?.created||Date.now(),updated:remoteUpdated||localUpdated||Date.now()
+     });
    });
-   trades=Array.from(byId.values()).filter(t=>t.date&&t.pair);
-   save();render();
-   setSyncStatus('Sync selesai. Data trade dan tautan screenshot dari Google Sheets sudah dimuat.');
+   // Pertahankan trade lokal yang belum sempat terkirim, lalu coba kirim ke server.
+   const remoteIds=new Set(remote.map(r=>String(r.id)));
+   const unsynced=Array.from(byId.values()).filter(t=>!remoteIds.has(String(t.id))&&!deleted.has(String(t.id)));
+   trades=Array.from(byId.values()).filter(t=>t.date&&t.pair&&!deleted.has(String(t.id)));
+   if(!save())throw new Error('Data lokal tidak berhasil disimpan.');
+   render();
+   if(unsynced.length){
+     unsynced.forEach(t=>syncSaveTrade(t));
+     setSyncStatus(`Sync selesai: ${trades.length} trade lokal. ${unsynced.length} trade lokal dicoba dikirim ke Sheets. Tekan Sync sekali lagi untuk verifikasi.`);
+   } else {
+     setSyncStatus(`Sync selesai. ${trades.length} trade tersinkron; penghapusan dari perangkat lain juga diterapkan.`);
+   }
  }catch(err){setSyncStatus('Sync gagal: '+(err.message||err)+' Data lokal tetap aman.')}
  finally{syncBusy=false;$('syncBtn').disabled=false}
 }
@@ -140,7 +165,7 @@ function render(){
  items.forEach(t=>{const pnl=Number(t.pnl||0),cls=pnl>0?'positive':pnl<0?'negative':'neutral',el=document.createElement('article');el.className='trade';
  el.innerHTML=`${(t.image||t.imageUrl)?`<img src="${esc(t.image||t.imageUrl)}" alt="Chart">`:''}<div class="trade-main"><div class="trade-title">${esc(t.pair)} <span style="color:var(--muted);font-size:12px">· ${esc(t.side)}</span></div><div class="trade-sub">Entry ${esc(t.entry||'—')} · SL ${esc(t.sl||'—')} · TP ${esc(t.tp||'—')}</div><div class="trade-sub">${esc(t.setup||'Tanpa catatan')}</div><div class="toolbar" style="margin-top:9px"><button class="secondary" data-edit="${esc(t.id)}">Edit</button><button class="secondary" data-delete="${esc(t.id)}">Hapus</button></div></div><div class="trade-pnl ${cls}">${pnl>0?'+':''}${money(pnl)}</div>`;
  list.append(el)});
- list.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editTrade(b.dataset.edit));list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm('Hapus trade ini?')){trades=trades.filter(t=>t.id!==b.dataset.delete);save();apiWrite({action:'delete',id:b.dataset.delete,token:API_TOKEN}).catch(()=>{});render()}});
+ list.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editTrade(b.dataset.edit));list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm('Hapus trade ini?')){trades=trades.filter(t=>t.id!==b.dataset.delete);save();apiWrite({action:'delete',id:b.dataset.delete,token:API_TOKEN}).catch(()=>{});setSyncStatus('Penghapusan dikirim ke server. Tekan Sync di perangkat lain agar penghapusan ikut diterapkan.');render()}});
   list.querySelectorAll('img').forEach(img=>{img.title='Ketuk untuk memperbesar';img.setAttribute('role','button');img.setAttribute('tabindex','0');img.style.cursor='zoom-in';img.style.pointerEvents='auto';const open=e=>{if(e)e.stopPropagation();showImage(img.src)};img.addEventListener('click',open);img.addEventListener('touchend',open,{passive:true});img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e)}})});
 }
 function openModal(t){$('tradeForm').reset();imageData=t?.image||t?.imageUrl||'';removeExistingImage=false;$('tradeId').value=t?.id||'';$('modalTitle').textContent=t?'Edit trade':'Tambah trade';$('date').value=t?.date||selected;$('pair').value=t?.pair||'';$('side').value=t?.side||'Buy';$('entry').value=t?.entry||'';$('sl').value=t?.sl||'';$('tp').value=t?.tp||'';$('pnl').value=t?.pnl??'';$('setup').value=t?.setup||'';
@@ -152,7 +177,7 @@ $('modalback').addEventListener('click',e=>{if(e.target===$('modalback'))closeMo
 $('imageFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>5*1024*1024){alert('Ukuran gambar maksimal 5 MB.');e.target.value='';return}try{imageData=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});const im=new Image();im.onload=()=>{const max=1100,scale=Math.min(1,max/im.width,max/im.height),c=document.createElement('canvas');c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);c.getContext('2d').drawImage(im,0,0,c.width,c.height);imageData=c.toDataURL('image/jpeg',.78);$('preview').src=imageData;$('preview').style.display='block';$('removeImage').classList.remove('hidden')};im.src=imageData}catch{alert('Gambar tidak bisa dibaca.')}});
 $('removeImage').onclick=()=>{imageData='';removeExistingImage=true;$('preview').style.display='none';$('preview').src='';$('imageFile').value='';$('removeImage').classList.add('hidden')};
 $('tradeForm').addEventListener('submit',e=>{e.preventDefault();const pnl=Number($('pnl').value);if(!Number.isFinite(pnl))return alert('Isi P&L dengan angka yang valid.');const id=$('tradeId').value||String(Date.now())+'-'+Math.random().toString(36).slice(2,7),old=trades.find(t=>t.id===id);
- const t={id,date:$('date').value,pair:$('pair').value.trim().toUpperCase(),side:$('side').value,entry:$('entry').value,sl:$('sl').value,tp:$('tp').value,pnl,setup:$('setup').value.trim(),image:removeExistingImage?'':(imageData||old?.image||''),created:old?.created||Date.now()};
+ const t={id,date:$('date').value,pair:$('pair').value.trim().toUpperCase(),side:$('side').value,entry:$('entry').value,sl:$('sl').value,tp:$('tp').value,pnl,setup:$('setup').value.trim(),image:removeExistingImage?'':(imageData||old?.image||''),created:old?.created||Date.now(),updated:Date.now(),imageUrl:old?.imageUrl||''};
  if(!t.date||!t.pair)return alert('Tanggal dan pair wajib diisi.');if(old)trades=trades.map(x=>x.id===id?t:x);else trades.push(t);if(!save())return;syncSaveTrade(t);selected=t.date;view=new Date(t.date+'T12:00:00');closeModal();render()});
 $('prevMonth').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};$('nextMonth').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};$('todayBtn').onclick=()=>{view=new Date();selected=iso(new Date());render()};
 function download(name,content,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
